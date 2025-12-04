@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Js;
 use Nette\Utils\Json;
 
 class AuthenticatedSessionController extends Controller
@@ -30,15 +31,6 @@ class AuthenticatedSessionController extends Controller
             "token" => $token,
         ]
         ]);
-    // return response()->json(
-    //     "data" => [
-    //         [
-    //     // "user"  => new UseResource($user),
-    //     "user" => $user,
-    //     "token" => $token,
-    //     ]
-    // ]);
-
 
 }
 
@@ -46,12 +38,16 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): Response
+    public function destroy(Request $request): JsonResponse
     {
+        $request->user()->currentAccessToken()->delete(); // this is work good
 
-        $user = $request->user();
-        $user->currentAccessToken->delete();
-
-        return response()->noContent();
+        return response()->json([
+            "data" =>[
+                "message" => "Logged out sucsessfully",
+                "is_success" => true
+            ]
+        ], 200);
     }
+
 }
