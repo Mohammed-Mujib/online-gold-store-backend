@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +10,17 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 require __DIR__.'/auth.php';
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::resource('categories',CategoryController::class);
-});
+// Route::middleware(['auth:sanctum'])->group(function () {
+//     Route::resource('categories',CategoryController::class);
+// });
+
+// Route::resource('categories',CategoryController::class);
+// Route::prefix('/categories')->group(function () {
+//     Route::get('',[CategoryController::class,'index']);           // GET /categories
+//     Route::post('',[CategoryController::class,'store']);         // POST /categories
+//     Route::put('/{category}',[CategoryController::class,'update']); // PUT /categories/{category}
+//     Route::delete('/{category}',[CategoryController::class,'destroy']); // DELETE /categories/{category}
+// });
+
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('products', ProductController::class);
