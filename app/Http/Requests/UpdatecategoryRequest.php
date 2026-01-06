@@ -21,8 +21,8 @@ class UpdatecategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+       return [
+            "name"=> "required|string|min:3",
         ];
     }
 }

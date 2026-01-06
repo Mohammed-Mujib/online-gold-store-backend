@@ -13,15 +13,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $data= product::all();
+        return response()->json([
+        'data' => $data
+        ]);
     }
 
     /**
@@ -29,7 +24,13 @@ class ProductController extends Controller
      */
     public function store(StoreproductRequest $request)
     {
-        //
+        $data = $request->validated();
+        $product = product::create($data);
+        return response()->json([
+            'is_scucess' => true,
+            'message'=> 'category created scucessfully',
+
+        ],200);
     }
 
     /**
@@ -37,15 +38,10 @@ class ProductController extends Controller
      */
     public function show(product $product)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(product $product)
-    {
-        //
+        return response()->json([
+            'is_success' => true,
+            'data' => $product
+        ], 200);
     }
 
     /**
@@ -61,6 +57,20 @@ class ProductController extends Controller
      */
     public function destroy(product $product)
     {
-        //
+          // Ensure the category exists before trying to delete it
+        if (!$product) {
+            return response()->json([
+                'is_success' => false,
+                'message' => 'Product not found'
+            ], 404);  // Return 404 if category doesn't exist
+        }
+
+        // Perform the deletion
+        $product->delete();
+
+        return response()->json([
+            'is_success' => true,
+            'message' => 'Product deleted successfully'
+        ]);
     }
 }
