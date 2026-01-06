@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Scrape;
+use App\Http\Controllers\ScrapeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,3 +26,5 @@ require __DIR__.'/auth.php';
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('products', ProductController::class);
+
+Route::get('/gold/sudan', [ScrapeController::class, 'scrape'])->name("gold-prices");
