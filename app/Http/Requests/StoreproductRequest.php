@@ -28,7 +28,7 @@ class StoreproductRequest extends FormRequest
 
             // Gold-specific attributes
             'weight' => ['required', 'numeric', 'min:0.01'],
-            'karat' => ['required', 'integer', 'in:18,21,22,24'],
+            'karat' => ['required', 'integer', 'in:9,10,12,14,18,21,22,24'],
             'type' => ['nullable', 'string', 'max:100'],
 
             // Pricing

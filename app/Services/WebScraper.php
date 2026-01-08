@@ -45,15 +45,20 @@ class WebScraper
             $sdg   = trim($tr->filter('td.auto-update')->eq(0)->text());
             $usd   = trim($tr->filter('td.auto-update')->eq(1)->text());
 
-            $prices[$this->normalizeLabel($label)] = [
-                'label' => $this->normalizeLabel($label),
-                'price_sdg' => $this->normalizePrice($sdg),
-                'price_usd' => $this->normalizePrice($usd),
-            ];
+                  $karat = $this->extractKarat($label);
+        $measurement = $this->extractMeasurement($label);
 
+        $prices[] = [
+
+                'label'        => $this->normalizeLabel($label),
+                'karat'        => $karat,
+                'measurement'  => $measurement,
+                'price_sdg'    => $this->normalizePrice($sdg),
+                'price_usd'    => $this->normalizePrice($usd),
+        ];
         });
 
-        return $prices;
+        return ["data" => $prices];
     }
 
     private function normalizePrice(string $price): float
@@ -95,6 +100,35 @@ class WebScraper
 
         return strtolower($key);
     }
+    private function extractKarat(string $label): ?int
+{
+    if (preg_match('/عيار\s*(\d+)/u', $label, $matches)) {
+        return (int) $matches[1];
+    }
+    return null; // fallback if not found
+}
+    private function extractMeasurement(string $label): ?string
+{
+    if (preg_match('/وزن\s*(\d+)\s*جرام/u', $label, $matches)) {
+        return $matches[1] . 'g';
+    }
+
+    if (str_contains($label, 'اونصة')) {
+        return 'ounce';
+    } elseif (str_contains($label, 'سبيكة')) {
+        return 'bar';
+    } elseif (str_contains($label, 'الجنية')) {
+        return 'coin';
+    } elseif (str_contains($label, 'الكيلو')) {
+        return 'kg';
+    } elseif (str_contains($label, 'طن')) {
+        return 'ton';
+    } elseif (str_contains($label, 'جرام')) {
+        return 'gram';
+    }
+
+    return "gram"; // fallback if no match
+}
 
     protected function getPrice(Crawler $crawler, string $selector): ?float
     {
@@ -104,4 +138,5 @@ class WebScraper
 
         return (float) trim($crawler->filter($selector)->text());
     }
+
 }

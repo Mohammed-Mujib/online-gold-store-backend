@@ -20,7 +20,7 @@ return new class extends Migration
 
             // Gold-specific attributes
             $table->decimal('weight', 8, 2); // grams
-            $table->unsignedTinyInteger('karat'); // e.g., 24, 22, 21, 18
+            $table->unsignedTinyInteger('karat'); // e.g., 9,12,10,14,24, 22, 21, 18
             $table->string('type')->nullable(); // ring, chain, bracelet, etc.
 
             // Pricing
@@ -37,7 +37,10 @@ return new class extends Migration
 
             // Images (store paths or JSON array)
             $table->json('images')->nullable();
-
+            $table->boolean("is_store_own")->default(true);
+            
+            // a product that the user give it to us to sell in his behalf
+            $table->foreignId('user_id')->nullable();
             // Status
             $table->boolean('is_active')->default(true);
             $table->timestamps();

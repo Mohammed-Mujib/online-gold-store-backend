@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 use Acme\Client;
 
 use App\Services\WebScraper;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
+
 
 class ScrapeController extends Controller
 {
@@ -16,10 +15,4 @@ class ScrapeController extends Controller
 
         return response()->json($data);
     }
-    // public function __invoke(WebScraper $service)
-    // {
-    //     return response()->json(
-    //         $service->scrapeSudanGoldPrices()
-    //     );
-    // }
 }
