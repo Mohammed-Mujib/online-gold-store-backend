@@ -8,6 +8,7 @@ use App\Models\product;
 use App\Services\WebScraper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Nette\Utils\Json;
 
 class ProductController extends Controller
 {
@@ -25,100 +26,35 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(StoreproductRequest $request)
-    // {
-    //     $data = $request->validated();
-    //     $product = product::create($data);
-    //     return response()->json([
-    //         'is_scucess' => true,
-    //         'message'=> 'category created scucessfully',
-
-    //     ],200);
-    // }
-
-public function store(Request $request)
+public function store(StoreProductRequest $request)
 {
-    $validated = $request->validate([
-        'name'                  => 'required|string|max:255',
-        'description'           => 'nullable|string',
+    // Get validated data from Form Request
+    $attr = $request->validated();
 
-        'weight'                => 'required|numeric|min:0.01',
-        'karat'                 => 'required|in:24,22,21,18,14,12,10,9',
-        'type'                  => 'nullable|string|max:100',
+    // Create product first
+    $product = Product::create($attr);
 
-        'gold_price_per_gram'   => 'required|numeric|min:0',
-        'making_fee'            => 'nullable|numeric|min:0',
+    $imagePaths = [];
 
-        'stock'                 => 'required|integer|min:0',
-        'category_id'           => 'nullable|exists:categories,id',
+    // Handle images
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $image) {
 
-        'images'                => 'nullable|array',
-        'images.*'              => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            $path = $image->store(
+                "products/{$product->id}",
+                'public'
+            );
 
-        'is_store_own'          => 'required|boolean',
-        'is_active'             => 'sometimes|boolean',
-    ]);
-
-    return DB::transaction(function () use ($validated, $request) {
-
-        /* ---------------------------
-        Price calculation
-        ---------------------------- */
-        $goldValue  = $validated['weight'] * $validated['gold_price_per_gram'];
-        $makingFee  = $validated['making_fee'] ?? 0;
-        $totalPrice = $goldValue + $makingFee;
-
-        /* ---------------------------
-        Image upload
-        ---------------------------- */
-        $imagePaths = [];
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('products', 'public');
-            }
+            $imagePaths[] = "storage/" . $path;
         }
 
-        /* ---------------------------
-        Ownership logic
-        ---------------------------- */
-        $userId = null;
-
-        if ($validated['is_store_own'] === false) {
-            // product belongs to user (consignment)
-            $userId = auth()->id();
-        }
-
-        /* ---------------------------
-           Create product
-        ---------------------------- */
-        $product = Product::create([
-            'name'                => $validated['name'],
-            'description'         => $validated['description'] ?? null,
-
-            'weight'              => $validated['weight'],
-            'karat'               => $validated['karat'],
-            'type'                => $validated['type'] ?? null,
-
-            'gold_price_per_gram' => $validated['gold_price_per_gram'],
-            'making_fee'          => $makingFee,
-            'total_price'         => $totalPrice,
-
-            'stock'               => $validated['stock'],
-            'category_id'         => $validated['category_id'] ?? null,
-
-            'images'              => $imagePaths ?: null,
-            'is_store_own'        => $validated['is_store_own'],
-            'user_id'             => $userId,
-
-            'is_active'           => $validated['is_active'] ?? true,
+        // Update product images
+        $product->update([
+            'images' => $imagePaths
         ]);
+    }
 
-        return response()->json([
-            'message' => 'Product created successfully',
-            'data'    => $product,
-        ], 201);
-    });
+    return response()->json($product, 201);
 }
 
 
@@ -136,10 +72,37 @@ public function store(Request $request)
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateproductRequest $request, product $product)
-    {
-        //
+   public function update(StoreProductRequest $request, Product $product)
+{
+    // Get validated data
+    $attr = $request->validated();
+
+    // Update basic product data
+    $product->update($attr);
+
+    // Get existing images (if any)
+    $imagePaths = $product->images ?? [];
+
+    // Handle new images
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $image) {
+
+            $path = $image->store(
+                "products/{$product->id}",
+                'public'
+            );
+
+            $imagePaths[] = "storage/" . $path;
+        }
+
+        // Update images array
+        $product->update([
+            'images' => $imagePaths
+        ]);
     }
+
+    return response()->json($product);
+}
 
     /**
      * Remove the specified resource from storage.
